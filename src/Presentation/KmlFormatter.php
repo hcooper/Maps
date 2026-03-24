@@ -16,14 +16,25 @@ class KmlFormatter {
 	 * Builds and returns KML representing the set geographical objects.
 	 */
 	public function formatLocationsAsKml( Location ...$locations ): string {
-		$elements = $this->getKmlForLocations( $locations );
+		return $this->formatKml( $locations, [] );
+	}
+
+	/**
+	 * Builds and returns KML with locations and NetworkLinks to external KML files.
+	 *
+	 * @param Location[] $locations
+	 * @param string[] $kmlUrls
+	 */
+	public function formatKml( array $locations, array $kmlUrls ): string {
+		$networkLinks = $this->getNetworkLinksKml( $kmlUrls );
+		$placemarks = $this->getKmlForLocations( $locations );
 
 		// http://earth.google.com/kml/2.2
 		return <<<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
 	<Document>
-$elements
+$networkLinks$placemarks
 	</Document>
 </kml>
 EOT;
@@ -72,6 +83,33 @@ EOT;
 
 	private function escapeValue( string $value ): string {
 		return htmlspecialchars( $value, ENT_NOQUOTES );
+	}
+
+	/**
+	 * Generates KML NetworkLink elements for external KML URLs
+	 *
+	 * @param string[] $kmlUrls
+	 */
+	private function getNetworkLinksKml( array $kmlUrls ): string {
+		if ( empty( $kmlUrls ) ) {
+			return '';
+		}
+
+		$networkLinks = array_map(
+			function( string $url ) {
+				$escapedUrl = $this->escapeValue( $url );
+				return <<<EOT
+		<NetworkLink>
+			<Link>
+				<href>$escapedUrl</href>
+			</Link>
+		</NetworkLink>
+EOT;
+			},
+			$kmlUrls
+		);
+
+		return implode( "\n", $networkLinks ) . "\n";
 	}
 
 }

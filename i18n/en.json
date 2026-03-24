@@ -207,6 +207,7 @@
 	"semanticmaps-kml-title": "The default title for results",
 	"semanticmaps-kml-linkabsolute": "Should links be absolute (as opposed to relative)",
 	"semanticmaps-kml-filename": "The filename for the KML file",
+	"semanticmaps-kml-kmlproperty": "The name of the property containing KML file URLs to include as NetworkLinks",
 	"semanticmaps-kml-pagelinktext": "The text to use for the links to the page, in which $1 will be replaced by the page title",
 	"semanticmaps-shapes-improperformat": "Improper formatting of $1. Please see documentation for formatting",
 	"semanticmaps-shapes-missingshape": "No shapes found for $1. Please see documentation for available shapes",

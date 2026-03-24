@@ -87,6 +87,17 @@ class QueryHandler {
 
 	private string $userParam = '';
 
+	/**
+	 * The name of the property containing KML file URLs
+	 */
+	private string $kmlPropertyName = '';
+
+	/**
+	 * Collected KML URLs from query results
+	 * @var array<string>
+	 */
+	private array $kmlUrls = [];
+
 	public function __construct( QueryResult $queryResult, int $outputMode, bool $linkAbsolute = false ) {
 		$this->queryResult = $queryResult;
 		$this->outputMode = $outputMode;
@@ -202,6 +213,8 @@ class QueryHandler {
 				continue;
 			}
 
+			$propertyLabel = $resultArray->getPrintRequest()->getCanonicalLabel();
+
 			// Loop through all the parts of the field value.
 			while ( ( $dataValue = $resultArray->getNextDataValue() ) !== false ) {
 				if ( $dataValue instanceof \SMWRecordValue ) {
@@ -213,8 +226,15 @@ class QueryHandler {
 				} elseif ( $dataValue instanceof CoordinateValue ) {
 					$locations[] = $this->locationFromDataItem( $dataValue->getDataItem() );
 				}
+				elseif ( $this->kmlPropertyName !== '' && $propertyLabel === $this->kmlPropertyName ) {
+					// Collect KML URL from the specified property
+					$kmlUrl = $this->extractUrlFromDataValue( $dataValue );
+					if ( $kmlUrl !== '' ) {
+						$this->kmlUrls[] = $kmlUrl;
+					}
+				}
 				else {
-					$properties[$resultArray->getPrintRequest()->getCanonicalLabel()] = $this->handleResultProperty(
+					$properties[$propertyLabel] = $this->handleResultProperty(
 						$dataValue,
 						$resultArray->getPrintRequest()
 					);
@@ -230,6 +250,14 @@ class QueryHandler {
 			$dataItem->getLatitude(),
 			$dataItem->getLongitude()
 		);
+	}
+
+	/**
+	 * Extracts a URL string from a SMWDataValue
+	 */
+	private function extractUrlFromDataValue( SMWDataValue $dataValue ): string {
+		$text = $dataValue->getLongText( $this->outputMode, null );
+		return trim( $text );
 	}
 
 	/**
@@ -503,6 +531,21 @@ class QueryHandler {
 	 */
 	public function setActiveIcon( $activeIcon ) {
 		$this->activeIcon = $activeIcon;
+	}
+
+	/**
+	 * Sets the name of the property containing KML file URLs
+	 */
+	public function setKmlPropertyName( string $kmlPropertyName ) {
+		$this->kmlPropertyName = $kmlPropertyName;
+	}
+
+	/**
+	 * Gets all collected KML URLs from query results
+	 * @return array<string>
+	 */
+	public function getKmlUrls(): array {
+		return $this->kmlUrls;
 	}
 
 }

@@ -34,9 +34,13 @@ class KmlPrinter extends FileExportPrinter {
 		$queryHandler->setText( $this->params['text'] );
 		$queryHandler->setTitle( $this->params['title'] );
 		$queryHandler->setSubjectSeparator( '' );
+		$queryHandler->setKmlPropertyName( $this->params['kmlproperty'] );
+
+		$locations = [...$queryHandler->getLocations()];
+		$kmlUrls = $queryHandler->getKmlUrls();
 
 		$formatter = new KmlFormatter();
-		return $formatter->formatLocationsAsKml( ...$queryHandler->getLocations() );
+		return $formatter->formatKml( $locations, $kmlUrls );
 	}
 
 	/**
@@ -60,6 +64,10 @@ class KmlPrinter extends FileExportPrinter {
 
 		if ( $this->params['filename'] !== '' ) {
 			$link->setParameter( $this->params['filename'], 'filename' );
+		}
+
+		if ( $this->params['kmlproperty'] !== '' ) {
+			$link->setParameter( $this->params['kmlproperty'], 'kmlproperty' );
 		}
 
 		// Fix for offset-error in getQueryLink()
@@ -111,6 +119,11 @@ class KmlPrinter extends FileExportPrinter {
 		$definitions['filename'] = [
 			'message' => 'semanticmaps-kml-filename',
 			'default' => 'kml.kml',
+		];
+
+		$definitions['kmlproperty'] = [
+			'message' => 'semanticmaps-kml-kmlproperty',
+			'default' => '',
 		];
 
 		return $definitions;
